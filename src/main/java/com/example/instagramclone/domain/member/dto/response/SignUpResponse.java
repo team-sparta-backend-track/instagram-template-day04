@@ -1,17 +1,23 @@
 package com.example.instagramclone.domain.member.dto.response;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Getter
-@NoArgsConstructor
-@AllArgsConstructor
-public class SignUpResponse {
+import java.util.List;
 
-    private String message;
-    private String username;
+@Builder
+public record SignUpResponse(
+        String username,
+        String message
+) {
+    // 정적 팩토리 메서드로 객체 생성의 가독성을 높입니다.
 
-    // TODO: 1. 정적 팩토리 메소드 (of)를 만드세요
-    
+    public static SignUpResponse of(String username, String message) {
+        return SignUpResponse.builder()
+                .username(username)
+                .message(message)
+                .build();
+    }
 }

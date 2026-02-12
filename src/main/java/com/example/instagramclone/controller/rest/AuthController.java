@@ -1,13 +1,21 @@
 package com.example.instagramclone.controller.rest;
 
+import com.example.instagramclone.constant.AuthConstants;
+import com.example.instagramclone.domain.common.dto.ApiResponse;
 import com.example.instagramclone.domain.member.dto.request.SignUpRequest;
+import com.example.instagramclone.domain.member.dto.response.DuplicateCheckResponse;
+import com.example.instagramclone.domain.member.dto.response.SignUpResponse;
 import com.example.instagramclone.service.MemberService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -20,9 +28,23 @@ public class AuthController {
 
     // TODO: 1. 회원가입 API를 구현하세요 (@PostMapping)
     @PostMapping("/signup")
-    public ResponseEntity<?> signUp(@RequestBody SignUpRequest signUpRequest) {
-        return ResponseEntity.ok().build();
+    public ResponseEntity<ApiResponse<SignUpResponse>> signUp(@RequestBody @Valid SignUpRequest signUpRequest) {
+        memberService.signUp(signUpRequest);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(ApiResponse.success(SignUpResponse.of(signUpRequest.username(), AuthConstants.SIGNUP_SUCCESS_MESSAGE)));
     }
 
     // TODO: 2. 중복 확인 API를 구현하세요 (@GetMapping)
+    @GetMapping("/check-duplicate")
+    public ResponseEntity<ApiResponse<DuplicateCheckResponse>> checkDuplicate(@RequestParam String type, @RequestParam String value) {
+        boolean isAvailable = memberService.checkDuplicate(type, value);
+        String message = isAvailable ? "사용 가능한 " + type + "입니다." : "이미 사용 중인 " + type + "입니다.";
+
+        DuplicateCheckResponse response = isAvailable ?
+                DuplicateCheckResponse.available(message) :
+                DuplicateCheckResponse.unavailable(message);
+
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
 }
